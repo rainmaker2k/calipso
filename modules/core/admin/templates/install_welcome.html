@@ -1,0 +1,43 @@
+<article class="admin-body">
+    <header class="centred">
+        <h1>Calipso Installer</h1>
+    </header>
+    <p>
+        <strong><%= t("Thank you for choosing Calipso. You're awesome!") %></strong>
+        <%= t("It looks like this is your first time using Calipso in this " +
+        "environment, so here's what we'll do:") %>
+    </p>
+
+    <ol>
+        <% if (needMongo) { %>
+          <li><%= t("Setup Database") %></li>
+        <% } %>
+        <li><%= t("Create Admin") %></li>
+        <li><%= t("Add Features (Modules)") %></li>
+    </ol>
+
+    <p></p>
+    
+    <%- form %>
+
+    <footer class="admin-install-links row">
+        <a id="form-submit" class="submit" href="#"><%= t("Let's Start") %></a>
+    </footer>
+
+    <script>
+        (function L() {
+
+            if (window.jQuery) {
+
+                $('#form-submit').click(function (e) {
+                    e.preventDefault();
+                    $('#install-welcome-form').submit();
+                });
+            } else {
+                setTimeout(L, 50);
+            }
+
+        })();
+    </script>
+        
+</article>

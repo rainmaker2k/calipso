@@ -4,7 +4,7 @@
 # Make sure we have node and npm installed
 node=$(node --version)
 npm=$(npm --version)
-KEY_MODULES=(express mongodb node-expat)
+KEY_MODULES=()
 
 E_ERROR=1
 
@@ -27,20 +27,6 @@ else
   exit $E_ERROR
 fi
 
-# Checking that you have expat
-echo 'Checking for libexpat ...'
-expat_loc=`whereis -b expat.h | cut -c8-`
-if [[ -e "$expat_loc" ]]; then
-  echo 'Libexpat OK'
-else
-  echo "You don't seem to have libexpat-dev installed!  Calipso relies on this library for the node-expat module used to parse XML.  Please install via apt-get (or from source)." >&2
-  exit $E_ERROR
-fi
-
-# Lets try npm install
-echo "Installing dependencies via NPM ... please be patient this can take a few minutes ..."
-npmResult=$(npm install)
-
 # Quick check of key modules
 npm_local=$(npm root)
 npm_global=$(npm root -g)
@@ -60,9 +46,6 @@ for module in "${KEY_MODULES[@]}"; do
     fi
 done
 
-# Lets try our sanity test
-echo 'Running sanity tests ...'
-sanityTest=$(make)
-
 # Check to see if we got all 100%
-echo 'If you can see 100% success on the sanity tests then you are probably good to go!'
+echo 'Installation completed, please try the command "calipso" to test the installation.'
+exit 0

@@ -1,3 +1,5 @@
+var rootpath = process.cwd() + '/',
+  path = require('path');
 /**
  * Translation function, will be exposed through a connect middleware function
  * that adds a translate function to the request object.
@@ -8,25 +10,25 @@
  * Query string parameters will always take precedent over user session
  *
  */
-module.exports.translate = function(configLanguage,addMode) {
+module.exports.translate = function (configLanguage, enabledLanguages, addMode) {
 
   // Default to english
-  var languages = ['en']; // Always contains english
+  var languages = enabledLanguages || ['en']; // Always contains english
   var languageCache = cacheLanguages([], languages);
 
-  return function(req, res, next) {
+  return function (req, res, next) {
 
     // Set the request language
     req.language = configLanguage || "en";
 
     // add our loaded languages to the request object
     req.languages = languages;
-    
+
     // Add the translate function to the request object
-    req.t = req.translate = function(englishString, values) {
+    req.t = req.translate = function (englishString, values) {
 
       // Check the user session
-      if(req.session && req.session.user) {
+      if (req.session && req.session.user) {
         // Set the language to the user configuration if it exists;
         req.language = req.session.user.language || req.language;
       }
@@ -35,10 +37,10 @@ module.exports.translate = function(configLanguage,addMode) {
       req.language = req.moduleParams ? req.moduleParams.language || req.language : req.language;
 
       // Translate
-      if(languageCache[req.language]) {
+      if (languageCache[req.language]) {
         return doTranslation(englishString, languageCache[req.language], values, addMode);
       } else {
-        if(addMode) {
+        if (addMode) {
           // Add the language
           languageCache[req.language] = {};
           return doTranslation(englishString, languageCache[req.language], values, addMode);
@@ -49,7 +51,7 @@ module.exports.translate = function(configLanguage,addMode) {
 
     }
 
-    if(addMode) {
+    if (addMode) {
       req.languageCache = languageCache;
     }
 
@@ -69,10 +71,10 @@ function cacheLanguages(languages, loadedLanguages) {
 
   // Read the language files, sync is ok as this is done once on load
   var fs = require("fs");
-  fs.readdirSync("i18n").forEach(function(file){
+  fs.readdirSync("i18n").forEach(function (file) {
     var languageFile = file.split(".");
-    if(languageFile[0] === "language") {
-      languageCache[languageFile[1]] = require("i18n/" + file).language;
+    if (languageFile[0] === "language") {
+      languageCache[languageFile[1]] = require(path.join(rootpath, "i18n/", file)).language;
       loadedLanguages.push(languageFile[1]);
     }
   });
@@ -86,7 +88,7 @@ function cacheLanguages(languages, loadedLanguages) {
  */
 function doTranslation(englishString, languageCache, values, addMode) {
 
-  if(addMode) {
+  if (addMode) {
     // Add the string if appropriate
     languageCache[englishString] = languageCache[englishString] || englishString;
     return replaceValues(languageCache[englishString], values);
@@ -109,9 +111,10 @@ function doTranslation(englishString, languageCache, values, addMode) {
  * Output:
  *     "Hello Clifton"
  */
-function replaceValues(string,values) {
+function replaceValues(string, values) {
 
-  return string.replace(/{[^{}]+}/g, function(key) {
+  return string.replace(/{[^{}]+}/g, function (key) {
+    if (!values) values = {}; // In case we have { } in the string but really no values (thinking Mongo Errors during install)
     return values[key.replace(/[{}]+/g, "")] || "";
   });
 
